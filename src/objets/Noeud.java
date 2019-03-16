@@ -28,6 +28,20 @@ public class Noeud {
 		this.capaTraitement = capaTraitement;
 		this.couttraitement = couttraitement;
 	}
+	
+	public Noeud(String name, ArrayList<Produit> listproduits) {
+		super();
+		this.name = name;
+		this.listproduits = listproduits;
+		this.stockinitial = new ArrayList<Integer>();
+		for (int i=0;i<listproduits.size();i++) {
+			stockinitial.add(0);
+		}
+		stockactuel = new ArrayList<Integer>();
+		for (int i=0;i<listproduits.size();i++) {
+			stockactuel.add(stockinitial.get(i));
+		}
+	}
 	public String getName() {
 		return name;
 	}
