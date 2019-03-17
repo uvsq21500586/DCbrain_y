@@ -41,6 +41,8 @@ public class Noeud {
 		for (int i=0;i<listproduits.size();i++) {
 			stockactuel.add(stockinitial.get(i));
 		}
+		this.coutstock = 0;
+		this.couttraitement = 0;
 	}
 	public String getName() {
 		return name;
