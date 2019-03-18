@@ -116,7 +116,7 @@ public class Commandealea {
 		long dureejours;
 		Date vraidatedebut = formater.parse(datedebut);
 		Date vraidatefin = formater.parse(datefin);
-		dureejours = (vraidatefin.getTime() - vraidatedebut.getTime())/86400;
+		dureejours = (vraidatefin.getTime() - vraidatedebut.getTime())/86400000;
 		
 		ArrayList<Commande> com = new ArrayList<Commande>();
 		

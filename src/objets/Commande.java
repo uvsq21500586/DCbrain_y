@@ -7,11 +7,13 @@ public class Commande {
 	private Date date;
 	private String produitcommande;
 	private int quantite;
+	private int etat;
 	public Commande(Date date, String produitcommande, int quantite) {
 		super();
 		this.date = date;
 		this.produitcommande = produitcommande;
 		this.quantite = quantite;
+		etat = 0;
 	}
 	public Date getDate() {
 		return date;
@@ -30,6 +32,12 @@ public class Commande {
 	}
 	public void setQuantite(int quantite) {
 		this.quantite = quantite;
+	}
+	public int getEtat() {
+		return etat;
+	}
+	public void setEtat(int etat) {
+		this.etat = etat;
 	}
 	
 	

@@ -1,6 +1,11 @@
 package gui;
 
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.Graphics;
+import java.awt.Image;
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.FileWriter;
@@ -8,21 +13,46 @@ import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 
+import javax.swing.ImageIcon;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JPanel;
 
+import decisions.*;
+import listener.Controler;
 import objets.*;
 
 public class Gui extends JFrame {
+	
+	static String datedebut = "2018-01-01 00:00:00";
+	static String datefin = "2018-06-30 23:59:59";
+	static double poidsclient = 20;
+	static double productioncoupee = 1;
+	
 	private ArrayList<Produit> listproduits;
 	private ArrayList<Noeud> listnoeuds;
 	private ArrayList<Lien> listliens;
-	static String datedebut = "2018-01-01 00:00:00";
-	static String datefin = "2018-06-30 23:59:59";
+	
+	private ExitBut exit;
+	private AjoutActivationBut ajoutactivation;
+	private SupprActivationBut suppractivation;
+	private SimulBut simulation;
+	private JLabel evaluation;
+	private double valeurevaluation;
+	private ArrayList<Activationligne> listactivations;
+	private Date vdatedebut;
+	private Date vdatefin;
+	private int dureejours;
 
 	public Gui() throws IOException, ParseException{
 		SimpleDateFormat formater = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		vdatedebut = formater.parse(datedebut);
+		vdatefin = formater.parse(datefin);
+		dureejours = (int) ((vdatefin.getTime() - vdatedebut.getTime()) / 86400000);
+		
 		
 		//générer la liste des produits
 		listproduits = new ArrayList<Produit>();
@@ -111,7 +141,7 @@ public class Gui extends JFrame {
 				} else {
 					d = listnoeuds.get(getposnoeud(nodeInfo[1]));
 				}
-				listliens.add(new Lien(nodeInfo[2],d,s));
+				listliens.add(new Lien(nodeInfo[2],s,d));
 			}
 		}
 		br.close();
@@ -244,7 +274,7 @@ public class Gui extends JFrame {
 		}
 		br.close();
 		
-		//cout lien
+		//capacite vehicule
 		try {
 			br = new BufferedReader(new FileReader("edges_properties.csv"));
 		} catch (FileNotFoundException e) {
@@ -273,6 +303,62 @@ public class Gui extends JFrame {
 		System.out.println();
 		
 		
+		
+		//créer la fenetre
+		ImageIcon bg = new ImageIcon("src/background.png");
+		JLabel g = new JLabel(bg);
+		g.setVisible(true);
+		try {
+		    final Image backgroundImage = javax.imageio.ImageIO.read(new File("background.png"));
+		    setContentPane(new JPanel(new BorderLayout()) {
+		        @Override public void paintComponent(Graphics g) {
+		            g.drawImage(backgroundImage, 0, 0, null);
+		        }
+		    });
+		} catch (IOException e) {
+		    throw new RuntimeException(e);
+		}
+		this.add(g);
+		setResizable(false); 
+		setSize(1400, 800);
+		this.getContentPane().setLayout(null);
+		this.setVisible(true);
+		setDefaultCloseOperation(EXIT_ON_CLOSE);
+		
+		exit = new ExitBut("exit");
+		this.add(exit);
+		exit.setBounds(1000, 600, 200, 84);
+		
+		valeurevaluation = 0;
+		simuler();
+		setEvaluation(new JLabel("evaluation:"+ valeurevaluation));
+		this.add(evaluation);
+		evaluation.setFont(new Font("Lucida Console", Font.BOLD, 20));
+		evaluation.setBounds(100, 100, 300, 40);
+		
+		listactivations = new  ArrayList<Activationligne>();
+		simulation = new SimulBut("simulation");
+		this.add(simulation);
+		simulation.setBounds(100, 150, 200, 70);
+		
+		ajoutactivation = new AjoutActivationBut("Ajout activation");
+		this.add(ajoutactivation);
+		ajoutactivation.setBounds(100, 600, 200, 84);
+		
+		suppractivation = new SupprActivationBut("Supprime activation");
+		this.add(suppractivation);
+		suppractivation.setBounds(550, 600, 200, 84);
+		
+		
+		
+		
+		
+		
+		
+		this.repaint();
+		this.validate();
+		
+		Controler controler = new Controler(this);
 		
 	}
 	
@@ -319,4 +405,173 @@ public class Gui extends JFrame {
 		return pos;
 	}
 
+	public ArrayList<Lien> getListliens() {
+		return listliens;
+	}
+
+	public void setListliens(ArrayList<Lien> listliens) {
+		this.listliens = listliens;
+	}
+
+	public ExitBut getExit() {
+		return exit;
+	}
+
+	public void setExit(ExitBut exit) {
+		this.exit = exit;
+	}
+
+	public JLabel getEvaluation() {
+		return evaluation;
+	}
+
+	public void setEvaluation(JLabel evaluation) {
+		this.evaluation = evaluation;
+	}
+
+	public ArrayList<Activationligne> getListactivations() {
+		return listactivations;
+	}
+
+	public void setListactivations(ArrayList<Activationligne> listactivations) {
+		this.listactivations = listactivations;
+	}
+
+	public double getValeurevaluation() {
+		return valeurevaluation;
+	}
+
+	public void setValeurevaluation(double valeurevaluation) {
+		this.valeurevaluation = valeurevaluation;
+	}
+
+	public static String getDatedebut() {
+		return datedebut;
+	}
+
+	public static void setDatedebut(String datedebut) {
+		Gui.datedebut = datedebut;
+	}
+
+	public static String getDatefin() {
+		return datefin;
+	}
+
+	public static void setDatefin(String datefin) {
+		Gui.datefin = datefin;
+	}
+
+	public SimulBut getSimulation() {
+		return simulation;
+	}
+
+	public void setSimulation(SimulBut simulation) {
+		this.simulation = simulation;
+	}
+	
+	public static double getPoidsclient() {
+		return poidsclient;
+	}
+
+	public static void setPoidsclient(double poidsclient) {
+		Gui.poidsclient = poidsclient;
+	}
+
+	public static double getProductioncoupee() {
+		return productioncoupee;
+	}
+
+	public static void setProductioncoupee(double productioncoupee) {
+		Gui.productioncoupee = productioncoupee;
+	}
+
+	public int getDureejours() {
+		return dureejours;
+	}
+
+	public void setDureejours(int dureejours) {
+		this.dureejours = dureejours;
+	}
+
+	public Date getVdatedebut() {
+		return vdatedebut;
+	}
+
+	public void setVdatedebut(Date vdatedebut) {
+		this.vdatedebut = vdatedebut;
+	}
+
+	public Date getVdatefin() {
+		return vdatefin;
+	}
+
+	public void setVdatefin(Date vdatefin) {
+		this.vdatefin = vdatefin;
+	}
+
+	public AjoutActivationBut getAjoutactivation() {
+		return ajoutactivation;
+	}
+
+	public void setAjoutactivation(AjoutActivationBut ajoutactivation) {
+		this.ajoutactivation = ajoutactivation;
+	}
+
+	public SupprActivationBut getSuppractivation() {
+		return suppractivation;
+	}
+
+	public void setSuppractivation(SupprActivationBut suppractivation) {
+		this.suppractivation = suppractivation;
+	}
+
+	public void simuler(){
+		//évaluation fonction objective
+		
+		//initialisation
+		for (int i=0;i<listnoeuds.size();i++){
+			for (int j=0;j<listproduits.size();j++){
+				listnoeuds.get(i).getStockactuel().set(j, listnoeuds.get(i).getStockinitial().get(j));
+			}
+		}
+		
+		valeurevaluation = 0;
+		//clients non satisfaits
+		for (int i=0;i<listnoeuds.size();i++){
+			if (listnoeuds.get(i) instanceof Client){
+				for(int j=0;j<((Client) listnoeuds.get(i)).getListcom().size();j++){
+					if (((Client) listnoeuds.get(i)).getListcom().get(j).getEtat() !=1){
+						valeurevaluation += poidsclient;
+					}
+				}
+			}
+		}
+		
+		//usines surchargées
+		for (int i=0;i<listnoeuds.size();i++){
+			if (listnoeuds.get(i) instanceof Usine){
+				for (int t=1;t<=dureejours;t++){
+					for (int j=0;j<listproduits.size();j++){
+						int stock = listnoeuds.get(i).getStockactuel().get(j);
+						if (stock + ((Usine)listnoeuds.get(i)).getProduction() > listnoeuds.get(i).getCapaStock()){
+							valeurevaluation += productioncoupee * (stock + ((Usine)listnoeuds.get(i)).getProduction() - listnoeuds.get(i).getCapaStock());
+							listnoeuds.get(i).getStockactuel().set(j, (int) listnoeuds.get(i).getCapaStock());
+							
+						} else {
+							listnoeuds.get(i).getStockactuel().set(j, (int) listnoeuds.get(i).getStockactuel().get(j) + ((Usine)listnoeuds.get(i)).getProduction() );
+						}
+					}
+					
+				}
+			}
+		}
+		
+	}
+	
+	public static Date ajouterJour(Date date, int nbJour) {
+		Calendar cal = Calendar.getInstance();
+		cal.setTime(date);
+		cal.add(Calendar.DAY_OF_MONTH, nbJour);
+		return cal.getTime();
+	}
 }
